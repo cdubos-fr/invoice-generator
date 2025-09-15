@@ -1,0 +1,20 @@
+{
+  "template": "/home/kobajaski/project/cookiecutter-python",
+  "commit": "7508bb83a8dd0b943fba6e7e9ed858a029b8d8b0",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "python_version": "3.13",
+      "full_name": "Clément Dubos",
+      "email": "contact@cdubos.fr",
+      "project_name": "invoice-generator",
+      "project_slug": "invoice_generator",
+      "description": "Générateur de facture et devis",
+      "version": "0.0.0",
+      "is_file_module": false,
+      "_template": "/home/kobajaski/project/cookiecutter-python",
+      "_commit": "7508bb83a8dd0b943fba6e7e9ed858a029b8d8b0"
+    }
+  },
+  "directory": null
+}

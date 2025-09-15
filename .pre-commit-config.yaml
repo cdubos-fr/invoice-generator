@@ -1,0 +1,46 @@
+default_stages: ['pre-commit']
+default_install_hook_types: [pre-commit, commit-msg, pre-push]
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: debug-statements
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+      - id: requirements-txt-fixer
+
+  - repo: https://github.com/NixOS/nixfmt
+    rev: 2c611acc3a6ce6466fc6d13ea8b60e243686a526
+    hooks:
+      - id: nixfmt
+
+  - repo: https://github.com/bwhmather/ssort
+    rev: 0.14.0
+    hooks:
+      - id: ssort
+
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff
+        language: python
+        entry: ruff check --force-exclude
+        types_or: [python, pyi, jupyter]
+        require_serial: true
+      - id: ruff-format
+        name: ruff-format
+        language: python
+        entry: ruff format --force-exclude
+        types_or: [python, pyi, jupyter]
+        require_serial: true
+
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.6.0
+    hooks:
+      - id: commitizen
+      - id: commitizen-branch
+        stages: [pre-push]

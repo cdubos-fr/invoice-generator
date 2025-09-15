@@ -1,0 +1,144 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "invoice-generator"
+description = "Générateur de facture et devis"
+version = "0.0.0"
+authors = [{name = "Clément Dubos", email = "contact@cdubos.fr"}]
+readme = "README.md"
+requires-python = ">= 3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "ruff>=0.6.0",
+    "pre-commit>=3.6.0",
+    "commitizen>=3.21.0",
+    "build>=1.2.1",
+]
+typing = [
+    "mypy>=1.10.0",
+    "types-setuptools",
+]
+tests = [
+    "pytest>=8.2.0",
+    "pytest-cov>=5.0.0",
+    "pytest-lazy-fixture>=0.6.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.5.0",
+]
+security = [
+    "bandit>=1.7.9",
+    "safety>=3.2.0",
+]
+
+[tool.flit.module]
+name = "invoice_generator"
+
+[tool.pdm]
+distribution = true
+
+[tool.mypy]
+python_version = "3.13"
+warn_unused_configs = true
+warn_redundant_casts = true
+show_error_codes = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "invoice_generator.*"
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+warn_unused_ignores = true
+no_implicit_reexport = true
+
+[tool.ruff]
+fix = true
+line-length = 100
+preview = true
+lint.select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # Warning
+    "W",
+    # Mccabe
+    "C90",
+    # isort
+    "I",
+    # pep8-naming
+    "N",
+    # pydocstyle
+    "D",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-annotations
+    "ANN",
+    # bandit
+    "S",
+    # flake8-builtins
+    "A",
+    # flake8-commas
+    "COM",
+    # flake8-future-annotations
+    "FA",
+    # flake8-logging
+    "LOG",
+    # flake8-logging-format
+    "G",
+    # flake8-print
+    "T20",
+    # flake8-pytest-style
+    "PT",
+    # flake8-simplify
+    "SIM",
+    # flake8-type-checking
+    "TCH",
+    # tryceratops
+    "TRY",
+]
+lint.ignore = [
+    "ANN101",
+    "D203",
+    "D212",
+    "D213",
+    "COM812",
+]
+lint.per-file-ignores."tests/**.py" = [
+    "D",
+    "S101",
+]
+lint.isort.force-single-line = true
+format.quote-style = "single"
+format.docstring-code-format = true
+format.preview = true
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.0.0"
+version_files = [
+    "pyproject.toml:version",
+    "invoice_generator/__init__.py"
+]
+style = [
+    ["qmark", "fg:#ff9d00 bold"],
+    ["question", "bold"],
+    ["answer", "fg:#ff9d00 bold"],
+    ["pointer", "fg:#ff9d00 bold"],
+    ["highlighted", "fg:#ff9d00 bold"],
+    ["selected", "fg:#cc5454"],
+    ["separator", "fg:#cc5454"],
+    ["instruction", ""],
+    ["text", ""],
+    ["disabled", "fg:#858585 italic"]
+]
