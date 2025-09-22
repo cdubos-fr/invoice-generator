@@ -9,7 +9,13 @@ version = "0.0.0"
 authors = [{name = "Clément Dubos", email = "contact@cdubos.fr"}]
 readme = "README.md"
 requires-python = ">= 3.13"
-dependencies = []
+dependencies = [
+    "PyQt6>=6.6",
+    "reportlab>=4.0",
+]
+
+[project.scripts]
+invoice-generator = "invoice_generator.app:main"
 
 [dependency-groups]
 dev = [
