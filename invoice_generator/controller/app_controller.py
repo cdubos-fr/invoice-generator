@@ -7,6 +7,7 @@ from pathlib import Path
 from ..backend import export_json
 from ..backend import export_pdf
 from ..config import ConfigManager
+from ..io import parse_quote_json
 from ..model import Company
 from ..model import Document
 from ..model import DocumentType
@@ -76,3 +77,8 @@ class AppController:
         export_json(doc, json_path)
         export_pdf(doc, pdf_path)
         return json_path, pdf_path
+
+    # Import/Export helpers
+    def load_quote_from_json(self, path: Path) -> tuple[str, list[LineItem]]:
+        """Charger un devis JSON (retourne client + lignes prêtes à injecter dans la vue)."""
+        return parse_quote_json(path)

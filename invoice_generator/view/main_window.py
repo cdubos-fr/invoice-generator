@@ -5,11 +5,13 @@ Cette vue reste volontairement minimale à ce stade et délègue au contrôleur.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Protocol
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QComboBox
 from PyQt6.QtWidgets import QDoubleSpinBox
+from PyQt6.QtWidgets import QFileDialog
 from PyQt6.QtWidgets import QGridLayout
 from PyQt6.QtWidgets import QGroupBox
 from PyQt6.QtWidgets import QHBoxLayout
@@ -143,8 +145,36 @@ class MainWindow(QMainWindow):
         )
 
     def _on_import_quote(self) -> None:
-        # TODO: boîte de dialogue fichier + chargement JSON → remplir table
-        pass
+        # Boîte de dialogue pour choisir un devis JSON exporté
+        path, _ = QFileDialog.getOpenFileName(self, 'Importer un devis (JSON)', '', 'JSON (*.json)')
+        if not path:
+            return
+        customer, lines = self._controller.load_quote_from_json(Path(path))
+
+        # Renseigner le client et les lignes dans l’onglet facture
+        self.invoice_customer.setText(customer)
+        self.invoice_table.setRowCount(0)
+        for li in lines:
+            self._add_line(self.invoice_table)
+            row = self.invoice_table.rowCount() - 1
+            combo = self.invoice_table.cellWidget(row, 0)
+            if isinstance(combo, QComboBox):
+                # Tenter de sélectionner l'item correspondant à la clé
+                for i in range(combo.count()):
+                    data = combo.itemData(i)
+                    if isinstance(data, tuple) and data[0] == li.item_key:
+                        combo.setCurrentIndex(i)
+                        break
+            # Description
+            self.invoice_table.item(row, 1).setText(li.description)
+            # Quantité
+            qty = self.invoice_table.cellWidget(row, 2)
+            if isinstance(qty, QSpinBox):
+                qty.setValue(int(li.quantity))
+            # Remise
+            disc = self.invoice_table.cellWidget(row, 4)
+            if isinstance(disc, QDoubleSpinBox):
+                disc.setValue(float(li.discount_pct))
 
     def _setup_invoice_tab(self) -> None:
         tab = QWidget()
