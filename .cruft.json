@@ -1,6 +1,6 @@
 {
   "template": "/home/kobajaski/project/cookiecutter-python",
-  "commit": "7508bb83a8dd0b943fba6e7e9ed858a029b8d8b0",
+  "commit": "c3508f54ca9ad88b588b2096fef68e16912940c1",
   "checkout": null,
   "context": {
     "cookiecutter": {
@@ -13,11 +13,11 @@
       "version": "0.0.0",
       "is_file_module": false,
       "_template": "/home/kobajaski/project/cookiecutter-python",
-      "_commit": "7508bb83a8dd0b943fba6e7e9ed858a029b8d8b0"
+      "_commit": "c3508f54ca9ad88b588b2096fef68e16912940c1"
     }
   },
   "directory": null,
-    "skip": [
+  "skip": [
     ".git"
   ]
 }

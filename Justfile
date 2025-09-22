@@ -4,9 +4,8 @@ default:
     @just --list
 
 devenv:
-    @echo "Setting up development environment via tox-pdm (groups: dev,typing,tests,docs)"
+    @echo "Setting up development environment with tox-uv (.venv)"
     @tox devenv -e devenv .venv
-    @echo "Activating virtual environment"
     @source .venv/bin/activate; pre-commit install || true
     @echo "✓ Development environment ready"
 
@@ -16,7 +15,7 @@ check:
 
 # Run tests
 test:
-    @tox -e tests {posargs}
+    @tox -e tests
 
 # Run type checking
 typecheck:
@@ -51,13 +50,15 @@ clean:
     @find . -type d -name result -exec rm -rf {} +
 
 build:
-    @python -m build
+    @tox -e build
 
 update-deps:
-    @tox -e devenv
+    @echo "Recreating dev environment with tox-uv (fresh deps)"
+    @tox --recreate devenv -e devenv .venv
 
 sync:
-    @tox -e devenv
+    @echo "Syncing dev environment with tox-uv"
+    @tox devenv -e devenv .venv
 
 release version:
     @cz bump

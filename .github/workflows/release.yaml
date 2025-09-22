@@ -24,15 +24,27 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v1
+      - name: Cache uv
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-3.13-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-3.13-
+            ${{ runner.os }}-uv-
       - name: Install build tooling
-        run: pip install commitizen build twine
+        run: pip install commitizen tox tox-uv twine
       - name: Version bump & changelog
         uses: commitizen-tools/commitizen-action@0.21.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           changelog_increment_filename: body.md
-      - name: Build sdist & wheel
-        run: python -m build
+      - name: Build sdist & wheel (tox)
+        run: tox -e build
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -46,4 +58,3 @@ jobs:
           files: dist/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-

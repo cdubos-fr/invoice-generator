@@ -27,20 +27,30 @@ pip install -e ".[dev]"
 
 # Setup dev environment
 
-Create & activate a virtualenv and install grouped optional dependencies:
+Recommended: use the Just recipe (tox-uv will sync dependency groups into .venv)
+
+```bash
+just devenv
+```
+
+Manual alternative with uv
+
+```bash
+uv venv .venv
+source .venv/bin/activate
+uv pip install --upgrade pip
+uv pip install -e ".[dev,typing,tests,docs,security]"
+pre-commit install
+```
+
+Or manual with pip (fallback)
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
-pip install -e .[dev,typing,tests,docs]
+pip install -e ".[dev,typing,tests,docs,security]"
 pre-commit install
-```
-
-Alternatively you can use the Just recipe:
-
-```bash
-just devenv
 ```
 
 # Build (sdist & wheel)

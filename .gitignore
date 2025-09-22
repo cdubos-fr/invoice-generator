@@ -142,3 +142,11 @@ result
 
 # pdm
 .pdm-python
+
+# Editors / IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
