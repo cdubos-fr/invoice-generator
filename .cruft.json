@@ -16,5 +16,8 @@
       "_commit": "7508bb83a8dd0b943fba6e7e9ed858a029b8d8b0"
     }
   },
-  "directory": null
+  "directory": null,
+    "skip": [
+    ".git"
+  ]
 }
