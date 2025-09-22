@@ -23,6 +23,7 @@ def _draw_header(
     right: float,
     y_start: float,
     width: float,
+    logo_max_width: float | None,
 ) -> float:
     """Dessine l'entête du document et retourne la nouvelle coordonnée Y.
 
@@ -40,9 +41,9 @@ def _draw_header(
         with contextlib.suppress(Exception):
             c.drawImage(
                 str(doc.issuer.logo_path),
-                right - 80,
+                right - ((logo_max_width or 60.0) + 20),
                 y_start - 10,
-                width=60,
+                width=(logo_max_width or 60.0),
                 preserveAspectRatio=True,
                 mask='auto',
             )
@@ -95,7 +96,8 @@ def export_pdf(doc: Document, path: Path) -> None:
 
     # Début première page
     y = height - top_margin
-    y = _draw_header(c, doc, left, right, y, width)
+    logo_max_width = doc.issuer.logo_max_width
+    y = _draw_header(c, doc, left, right, y, width, logo_max_width)
     y = _draw_table_header(c, left, right, y)
 
     # Lignes
@@ -106,7 +108,7 @@ def export_pdf(doc: Document, path: Path) -> None:
             c.showPage()
             page_num += 1
             y = height - top_margin
-            y = _draw_header(c, doc, left, right, y, width)
+            y = _draw_header(c, doc, left, right, y, width, logo_max_width)
             y = _draw_table_header(c, left, right, y)
         c.drawString(left, y, line.description)
         c.drawRightString(330, y, f'{line.quantity:g}')
@@ -138,7 +140,7 @@ def export_pdf(doc: Document, path: Path) -> None:
                     c.showPage()
                     page_num += 1
                     y = height - top_margin
-                    y = _draw_header(c, doc, left, right, y, width)
+                    y = _draw_header(c, doc, left, right, y, width, logo_max_width)
                 c.drawString(left, y, ln)
                 y -= 12
 

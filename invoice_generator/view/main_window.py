@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Protocol
 
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QComboBox
 from PyQt6.QtWidgets import QDoubleSpinBox
 from PyQt6.QtWidgets import QFileDialog
@@ -41,6 +42,8 @@ class _ControllerProto(Protocol):
         self, doc_type: DocumentType, customer_name: str, lines: list[LineItem]
     ) -> tuple[object, object]: ...
     def load_quote_from_json(self, path: Path) -> tuple[str, list[LineItem]]: ...
+    def get_company_logo_max_width(self) -> float | None: ...
+    def set_company_logo_max_width(self, width: float | None) -> None: ...
 
 
 class MainWindow(QMainWindow):
@@ -258,6 +261,8 @@ class MainWindow(QMainWindow):
         g.addWidget(QLabel('Logo:'), 1, 0)
         self.company_logo = QLineEdit(self._controller.get_company_logo_path() or '')
         browse_btn = QPushButton('Parcourir…')
+        preview = QLabel()
+        preview.setMinimumHeight(60)
 
         def on_browse_logo() -> None:
             path, _ = QFileDialog.getOpenFileName(
@@ -269,14 +274,45 @@ class MainWindow(QMainWindow):
             if path:
                 self.company_logo.setText(path)
                 self._controller.set_company_logo_path(path)
+                _update_preview()
 
         def on_logo_edit_finished() -> None:
             self._controller.set_company_logo_path(self.company_logo.text() or None)
+            _update_preview()
+
+        def _update_preview() -> None:
+            p = self.company_logo.text().strip()
+            if not p:
+                preview.clear()
+                return
+            pix = QPixmap(p)
+            if pix.isNull():
+                preview.setText('(aperçu indisponible)')
+                return
+            w = float(self.logo_width.value()) if hasattr(self, 'logo_width') else 60.0
+            scaled = pix.scaled(int(w), int(w), Qt.AspectRatioMode.KeepAspectRatio)
+            preview.setPixmap(scaled)
 
         browse_btn.clicked.connect(on_browse_logo)
         self.company_logo.editingFinished.connect(on_logo_edit_finished)
         g.addWidget(self.company_logo, 1, 1)
         g.addWidget(browse_btn, 1, 2)
+        g.addWidget(preview, 2, 1, 1, 2)
+
+        # Largeur max logo
+        g.addWidget(QLabel('Largeur logo (px):'), 3, 0)
+        self.logo_width = QDoubleSpinBox()
+        self.logo_width.setRange(20.0, 400.0)
+        self.logo_width.setDecimals(0)
+        self.logo_width.setValue(float(self._controller.get_company_logo_max_width() or 60.0))
+
+        def on_logo_width_changed() -> None:
+            self._controller.set_company_logo_max_width(float(self.logo_width.value()))
+            _update_preview()
+
+        self.logo_width.valueChanged.connect(on_logo_width_changed)
+        g.addWidget(self.logo_width, 3, 1)
+        _update_preview()
         layout.addWidget(company_box)
 
         items_box = QGroupBox('Produits/Services')

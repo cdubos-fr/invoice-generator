@@ -16,6 +16,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
     'company': {
         'name': 'Ma Société',
         'logo_path': None,
+        'logo_max_width': 60.0,
         'address': None,
         'email': None,
         'phone': None,
@@ -65,6 +66,12 @@ class ConfigManager:
         """Update the company logo path and save the configuration."""
         data = self.load()
         data.setdefault('company', {})['logo_path'] = logo_path
+        self.save(data)
+
+    def set_company_logo_max_width(self, width: float | None) -> None:
+        """Update the company logo maximum width in pixels (float)."""
+        data = self.load()
+        data.setdefault('company', {})['logo_max_width'] = width
         self.save(data)
 
     def list_items(self) -> list[dict[str, Any]]:

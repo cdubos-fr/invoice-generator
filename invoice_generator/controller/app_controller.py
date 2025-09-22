@@ -46,6 +46,14 @@ class AppController:
         """Met à jour le chemin du logo de la société."""
         self.config.set_company_logo_path(logo_path)
 
+    def get_company_logo_max_width(self) -> float | None:
+        """Retourne la largeur maximum du logo si configurée."""
+        return self.config.get_company().get('logo_max_width')
+
+    def set_company_logo_max_width(self, width: float | None) -> None:
+        """Met à jour la largeur maximum du logo."""
+        self.config.set_company_logo_max_width(width)
+
     def list_config_items(self) -> list[tuple[str, str, float]]:
         """Retourne les items (key, label, unit_price)."""
         items = self.config.list_items()
@@ -69,6 +77,7 @@ class AppController:
         issuer = Company(
             name=cfg_company.get('name', 'Ma Société'),
             logo_path=cfg_company.get('logo_path'),
+            logo_max_width=cfg_company.get('logo_max_width'),
         )
         customer = Party(name=customer_name)
         doc = Document(

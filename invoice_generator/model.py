@@ -27,6 +27,7 @@ class Company:
 
     name: str
     logo_path: str | None = None
+    logo_max_width: float | None = None
     address: str | None = None
     email: str | None = None
     phone: str | None = None

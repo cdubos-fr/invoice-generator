@@ -42,6 +42,10 @@ def test_config_manager_roundtrip(tmp_path: Path) -> None:
     assert cfg.get_company().get('logo_path') is None
     cfg.set_company_logo_path(str(tmp_path / 'logo.png'))
     assert cfg.get_company().get('logo_path') == str(tmp_path / 'logo.png')
+    # Largeur logo
+    assert cfg.get_company().get('logo_max_width') == DEFAULT_CONFIG['company']['logo_max_width']
+    cfg.set_company_logo_max_width(120.0)
+    assert cfg.get_company().get('logo_max_width') == 120.0
     cfg.upsert_item('x', 'X', 12.5)
     items = cfg.list_items()
     assert any(it['key'] == 'x' and it['unit_price'] == 12.5 for it in items)
