@@ -46,6 +46,19 @@ def test_config_manager_roundtrip(tmp_path: Path) -> None:
     assert cfg.get_company().get('logo_max_width') == DEFAULT_CONFIG['company']['logo_max_width']
     cfg.set_company_logo_max_width(120.0)
     assert cfg.get_company().get('logo_max_width') == 120.0
+    # Hauteur et marge
+    assert cfg.get_company().get('logo_max_height') is None
+    cfg.set_company_logo_max_height(80.0)
+    assert cfg.get_company().get('logo_max_height') == 80.0
+    assert (
+        cfg.get_company().get('logo_margin_right') == DEFAULT_CONFIG['company']['logo_margin_right']
+    )
+    cfg.set_company_logo_margin_right(30.0)
+    assert cfg.get_company().get('logo_margin_right') == 30.0
     cfg.upsert_item('x', 'X', 12.5)
     items = cfg.list_items()
     assert any(it['key'] == 'x' and it['unit_price'] == 12.5 for it in items)
+    # Suppression
+    cfg.delete_item('x')
+    items2 = cfg.list_items()
+    assert all(it['key'] != 'x' for it in items2)

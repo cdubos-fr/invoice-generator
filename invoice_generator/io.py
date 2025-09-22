@@ -46,8 +46,10 @@ def parse_quote_json(path: Path) -> tuple[str, list[LineItem]]:
             key = str(obj.get('item_key') or '')
             desc = str(obj.get('description') or '')
             qty = float(obj.get('quantity') or 0.0)
-            unit = float(obj.get('unit_price') or 0.0)
+            unit_price = float(obj.get('unit_price') or 0.0)
             disc = float(obj.get('discount_pct') or 0.0)
+            unit = str(obj.get('unit') or '')
+            tax_pct = float(obj.get('tax_pct') or 0.0)
         except Exception:  # noqa: BLE001 - best-effort parsing with logging
             logger.exception('Malformed line in JSON: %s', obj)
             continue
@@ -56,8 +58,10 @@ def parse_quote_json(path: Path) -> tuple[str, list[LineItem]]:
                 item_key=key,
                 description=desc,
                 quantity=qty,
-                unit_price=unit,
+                unit_price=unit_price,
                 discount_pct=disc,
+                unit=unit,
+                tax_pct=tax_pct,
             )
         )
 

@@ -24,14 +24,14 @@ def _draw_header(
     y_start: float,
     width: float,
     logo_max_width: float | None,
+    logo_max_height: float | None,
+    logo_margin_right: float | None,
 ) -> float:
-    """Dessine l'entête du document et retourne la nouvelle coordonnée Y.
-
-    Affiche éventuellement un logo si ``doc.issuer.logo_path`` est défini.
-    """
+    """Dessine l'entête (titre + date + logo) et retourne la nouvelle coordonnée Y."""
     y_loc = y_start
     c.setFont('Helvetica-Bold', 14)
-    c.drawString(left, y_loc, f'{doc.doc_type.value.upper()} {doc.number or ""}')
+    title = 'DEVIS' if str(doc.doc_type) == 'DocumentType.QUOTE' else 'FACTURE'
+    c.drawString(left, y_loc, f'{title} {doc.number or ""}')
     y_loc -= 20
     c.setFont('Helvetica', 10)
     c.drawString(left, y_loc, f'Date: {doc.date_.isoformat()}')
@@ -39,28 +39,94 @@ def _draw_header(
     if doc.issuer.logo_path:
         # Tente d'afficher le logo; ignore silencieusement en cas d'erreur
         with contextlib.suppress(Exception):
+            w = logo_max_width or 60.0
+            h = logo_max_height or w
+            mr = logo_margin_right or 20.0
             c.drawImage(
                 str(doc.issuer.logo_path),
-                right - ((logo_max_width or 60.0) + 20),
+                right - (w + mr),
                 y_start - 10,
-                width=(logo_max_width or 60.0),
+                width=w,
+                height=h,
                 preserveAspectRatio=True,
                 mask='auto',
             )
-    c.drawString(left, y_loc, f'Emetteur: {doc.issuer.name}')
-    y_loc -= 15
-    c.drawString(left, y_loc, f'Client: {doc.customer.name}')
-    y_loc -= 20
     return y_loc
+
+
+def _draw_parties_frames(
+    c: canvas.Canvas, doc: Document, left: float, right: float, y: float
+) -> float:
+    """Dessine les cadres Émetteur/Client côte à côte, retourne le Y suivant."""
+    c.setFont('Helvetica-Bold', 10)
+    mid = (left + right) / 2
+    # Cadre Émetteur (gauche)
+    c.drawString(left, y, 'Émetteur')
+    y -= 12
+    c.setFont('Helvetica', 9)
+    issuer_lines = [
+        doc.issuer.name,
+        doc.issuer.address or '',
+        f'Email: {doc.issuer.email}' if doc.issuer.email else '',
+        f'Téléphone: {doc.issuer.phone}' if doc.issuer.phone else '',
+        f'SIRET: {doc.issuer.siret}' if doc.issuer.siret else '',
+    ]
+    for ln in issuer_lines:
+        if ln:
+            c.drawString(left, y, ln)
+            y -= 12
+    # Relever y pour la zone client (commence en haut du bloc émetteur)
+    y_client = y + 12 * (len([ln for ln in issuer_lines if ln]) + 1)
+    c.setFont('Helvetica-Bold', 10)
+    c.drawString(mid + 10, y_client, 'Client')
+    y_client -= 12
+    c.setFont('Helvetica', 9)
+    client_lines = [
+        doc.customer.name,
+        doc.customer.address or '',
+        f'Email: {doc.customer.email}' if doc.customer.email else '',
+        f'Téléphone: {doc.customer.phone}' if doc.customer.phone else '',
+        f'SIRET: {doc.customer.siret}' if doc.customer.siret else '',
+    ]
+    for ln in client_lines:
+        if ln:
+            c.drawString(mid + 10, y_client, ln)
+            y_client -= 12
+    # Retourner le Y minimum des deux colonnes - petit espace
+    return min(y, y_client) - 10
+
+
+def _draw_realization_block(
+    c: canvas.Canvas, doc: Document, left: float, right: float, y: float
+) -> float:
+    """Bloc Sujet/Validité au-dessus du tableau (pour devis notamment)."""
+    if not doc.subject and not doc.validity_end_date:
+        return y
+    c.setFont('Helvetica-Bold', 10)
+    c.drawString(left, y, 'Réalisation')
+    y -= 12
+    c.setFont('Helvetica', 9)
+    if doc.subject:
+        c.drawString(left, y, f'Sujet: {doc.subject}')
+        y -= 12
+    if doc.validity_end_date:
+        c.drawString(left, y, f'Validité du devis: {doc.validity_end_date.isoformat()}')
+        y -= 12
+    y -= 6
+    c.line(left, y, right, y)
+    y -= 8
+    return y
 
 
 def _draw_table_header(c: canvas.Canvas, left: float, right: float, y: float) -> float:
     c.setFont('Helvetica-Bold', 10)
     c.drawString(left, y, 'Description')
-    c.drawString(300, y, 'Qté')
-    c.drawString(340, y, 'PU')
-    c.drawString(400, y, '% Rem.')
-    c.drawString(460, y, 'Total HT')
+    c.drawString(300, y, 'Unité')
+    c.drawString(350, y, 'Qté')
+    c.drawString(390, y, 'PU')
+    c.drawString(440, y, 'TVA %')
+    c.drawString(490, y, '% Rem.')
+    c.drawString(540, y, 'Total HT')
     y -= 12
     c.line(left, y, right, y)
     y -= 8
@@ -97,23 +163,53 @@ def export_pdf(doc: Document, path: Path) -> None:
     # Début première page
     y = height - top_margin
     logo_max_width = doc.issuer.logo_max_width
-    y = _draw_header(c, doc, left, right, y, width, logo_max_width)
+    logo_max_height = doc.issuer.logo_max_height
+    logo_margin_right = doc.issuer.logo_margin_right
+    y = _draw_header(
+        c,
+        doc,
+        left,
+        right,
+        y,
+        width,
+        logo_max_width,
+        logo_max_height,
+        logo_margin_right,
+    )
+    # Cadres émetteur/client
+    y = _draw_parties_frames(c, doc, left, right, y)
+    # Bloc réalisation (sujet/validité)
+    y = _draw_realization_block(c, doc, left, right, y)
     y = _draw_table_header(c, left, right, y)
 
     # Lignes
     for line in doc.lines:
         # Saut de page si on approche du bas
-        if y < bottom_margin + 40:  # laisser de la place pour le footer
+        if y < bottom_margin + 60:  # laisser de la place pour le footer
             _draw_footer(c, page_num, width, bottom_margin)
             c.showPage()
             page_num += 1
             y = height - top_margin
-            y = _draw_header(c, doc, left, right, y, width, logo_max_width)
+            y = _draw_header(
+                c,
+                doc,
+                left,
+                right,
+                y,
+                width,
+                logo_max_width,
+                logo_max_height,
+                logo_margin_right,
+            )
             y = _draw_table_header(c, left, right, y)
-        c.drawString(left, y, line.description)
-        c.drawRightString(330, y, f'{line.quantity:g}')
-        c.drawRightString(390, y, f'{line.unit_price:.2f}')
-        c.drawRightString(450, y, f'{line.discount_pct:.0f}')
+        # Fallback: si description vide, utiliser la clé de l'item
+        desc = (line.description or '').strip() or line.item_key
+        c.drawString(left, y, desc)
+        c.drawString(300, y, (line.unit or ''))
+        c.drawRightString(380, y, f'{line.quantity:g}')
+        c.drawRightString(430, y, f'{line.unit_price:.2f}')
+        c.drawRightString(490, y, f'{line.tax_pct:.0f}')
+        c.drawRightString(540, y, f'{line.discount_pct:.0f}')
         c.drawRightString(right, y, f'{line.total_ht():.2f}')
         y -= 14
 
@@ -122,7 +218,13 @@ def export_pdf(doc: Document, path: Path) -> None:
     c.line(left, y, right, y)
     y -= 18
     c.setFont('Helvetica-Bold', 11)
-    c.drawRightString(right, y, f'Sous-total HT: {doc.subtotal_ht():.2f} €')
+    c.drawRightString(right, y, f'TOTAL HT: {doc.subtotal_ht():.2f} €')
+    y -= 14
+    c.setFont('Helvetica', 10)
+    c.drawRightString(right, y, f'TOTAL TVA: {doc.total_tva():.2f} €')
+    y -= 14
+    c.setFont('Helvetica-Bold', 12)
+    c.drawRightString(right, y, f'Net à payer: {doc.net_to_pay():.2f} €')
     y -= 16
 
     # Notes optionnelles
@@ -140,7 +242,17 @@ def export_pdf(doc: Document, path: Path) -> None:
                     c.showPage()
                     page_num += 1
                     y = height - top_margin
-                    y = _draw_header(c, doc, left, right, y, width, logo_max_width)
+                    y = _draw_header(
+                        c,
+                        doc,
+                        left,
+                        right,
+                        y,
+                        width,
+                        logo_max_width,
+                        logo_max_height,
+                        logo_margin_right,
+                    )
                 c.drawString(left, y, ln)
                 y -= 12
 

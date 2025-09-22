@@ -38,6 +38,16 @@ Le parseur ignore les lignes mal formées (clés requises manquantes). `discount
 
 Le PDF inclut entête (logo optionnel), tableau paginé, sous-total HT, notes et pagination.
 
+### Logo
+
+Dans l’onglet Configuration:
+- sélectionnez un fichier image (PNG/JPG) comme logo,
+- ajustez « Largeur logo (px) » et « Hauteur logo (px) » pour forcer une taille max (ratio conservé),
+- ajustez « Marge droite logo (px) » pour l’écart entre le logo et le bord droit,
+- observez l’aperçu dynamique.
+
+Les valeurs sont enregistrées dans le fichier de configuration utilisateur et appliquées lors de la génération du PDF.
+
 ## Qualité
 
 Tests via pytest, lint/format avec Ruff, typage mypy. Utilisez `just check` pour tout lancer via tox.

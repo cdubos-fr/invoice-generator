@@ -1,0 +1,12 @@
+[run]
+omit =
+    invoice_generator/app.py
+    invoice_generator/view/*
+    invoice_generator/controller/app_controller.py
+
+[report]
+show_missing = true
+omit =
+    invoice_generator/app.py
+    invoice_generator/view/*
+    invoice_generator/controller/app_controller.py

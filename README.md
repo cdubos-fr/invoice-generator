@@ -127,6 +127,18 @@ Le PDF généré inclut:
 - notes optionnelles,
 - pied de page avec pagination.
 
+### Logo de la société
+
+Vous pouvez configurer un logo affiché en haut à droite:
+- Onglet « Configuration » → champ « Logo » pour sélectionner un fichier PNG/JPG.
+- « Largeur logo (px) » et « Hauteur logo (px) » définissent la taille maximale (ratio conservé).
+- « Marge droite logo (px) » règle l’écart au bord droit.
+- Un aperçu est visible et se met à jour en temps réel.
+
+Notes:
+- Le fichier de configuration est stocké par défaut dans `~/.config/invoice-generator/config.json`.
+- Clés utilisées: `company.logo_path`, `company.logo_max_width`, `company.logo_max_height`, `company.logo_margin_right` (floats, en pixels).
+
 ## Développement
 
 Voir `Justfile`, `tox.ini` et `pyproject.toml` pour les recettes (tests, lint/format, types, docs, sécurité). Utilisez `just check` pour lancer la batterie complète via tox.

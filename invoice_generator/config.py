@@ -17,9 +17,16 @@ DEFAULT_CONFIG: dict[str, Any] = {
         'name': 'Ma Société',
         'logo_path': None,
         'logo_max_width': 60.0,
+        'logo_max_height': None,
+        'logo_margin_right': 20.0,
         'address': None,
         'email': None,
         'phone': None,
+        'siret': None,
+    },
+    'counters': {
+        'quote': 0,
+        'invoice': 0,
     },
     'items': [
         {'key': 'service', 'label': 'Service', 'unit_price': 80.0},
@@ -74,6 +81,43 @@ class ConfigManager:
         data.setdefault('company', {})['logo_max_width'] = width
         self.save(data)
 
+    def set_company_logo_max_height(self, height: float | None) -> None:
+        """Update the company logo maximum height in pixels (float)."""
+        data = self.load()
+        data.setdefault('company', {})['logo_max_height'] = height
+        self.save(data)
+
+    def set_company_logo_margin_right(self, margin: float | None) -> None:
+        """Update the right margin (pixels) used to offset the logo from the page border."""
+        data = self.load()
+        data.setdefault('company', {})['logo_margin_right'] = margin
+        self.save(data)
+
+    # Coordonnées société
+    def set_company_address(self, address: str | None) -> None:
+        """Update company postal address (optional)."""
+        data = self.load()
+        data.setdefault('company', {})['address'] = address
+        self.save(data)
+
+    def set_company_email(self, email: str | None) -> None:
+        """Update company email (optional)."""
+        data = self.load()
+        data.setdefault('company', {})['email'] = email
+        self.save(data)
+
+    def set_company_phone(self, phone: str | None) -> None:
+        """Update company phone (optional)."""
+        data = self.load()
+        data.setdefault('company', {})['phone'] = phone
+        self.save(data)
+
+    def set_company_siret(self, siret: str | None) -> None:
+        """Update company SIRET identifier (optional)."""
+        data = self.load()
+        data.setdefault('company', {})['siret'] = siret
+        self.save(data)
+
     def list_items(self) -> list[dict[str, Any]]:
         """Return the list of configured items (products/services)."""
         return list(self.load().get('items', []))
@@ -90,3 +134,25 @@ class ConfigManager:
                 return
         items.append({'key': key, 'label': label, 'unit_price': unit_price})
         self.save(data)
+
+    def delete_item(self, key: str) -> None:
+        """Delete an item by its key if it exists."""
+        data = self.load()
+        items = data.setdefault('items', [])
+        new_items = [it for it in items if it.get('key') != key]
+        if len(new_items) != len(items):
+            data['items'] = new_items
+            self.save(data)
+
+    # Numérotation documents
+    def next_number(self, doc_type: str, prefix: str = '', width: int = 4) -> str:
+        """Return next incremental number for given doc type and persist the counter.
+
+        doc_type should be 'quote' or 'invoice'.
+        """
+        data = self.load()
+        counters = data.setdefault('counters', {'quote': 0, 'invoice': 0})
+        counters[doc_type] = int(counters.get(doc_type, 0)) + 1
+        self.save(data)
+        num = counters[doc_type]
+        return f'{prefix}{num:0{width}d}'
