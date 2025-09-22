@@ -45,7 +45,7 @@ jobs:
             ${{ runner.os }}-tox-
       - run: pip install tox tox-uv tox-gh
       - name: Run tox via tox-gh
-        run: tox-gh --skip "build" --parallel
+        run: tox --skip-env "build" --parallel
 
   build:
     runs-on: ubuntu-latest
