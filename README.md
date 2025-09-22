@@ -5,6 +5,8 @@
 
 Générateur de facture et devis
 
+Application Python (PyQt6) pour créer des devis et générer des factures, avec export PDF et JSON. Architecture MVC propre, configuration fichier, et qualité outillée (ruff, mypy, pytest).
+
 # Installation
 
 ```bash
@@ -75,4 +77,57 @@ mypy -p invoice_generator
 
 ```bash
 mkdocs build
+
+## Utilisation (CLI)
+
+Après installation, lancez l’application:
+
+```bash
+invoice-generator
+```
+
+L’UI propose 3 onglets: Devis, Facture, Configuration. Vous pouvez:
+- créer des lignes (produits/services), appliquer des remises,
+- importer un devis JSON dans l’onglet Facture (bouton « Importer depuis devis JSON »),
+- générer un document (PDF + JSON).
+
+## Format JSON des documents
+
+Les fichiers exportés contiennent notamment:
+
+```json
+{
+	"type": "quote|invoice",
+	"number": "FAC-2025-0001",
+	"date": "2025-01-15",
+	"issuer": {"name": "Ma Société"},
+	"customer": {"name": "Client SA"},
+	"lines": [
+		{
+			"item_key": "svc",
+			"description": "Service",
+			"quantity": 2,
+			"unit_price": 100.0,
+			"discount_pct": 10.0,
+			"total_ht": 180.0
+		}
+	],
+	"subtotal_ht": 180.0
+}
+```
+
+Le parseur d’import de devis est permissif mais ignore les lignes mal formées (sans `item_key`, `description`, `quantity`, `unit_price`). Le champ `discount_pct` manquant est considéré comme `0.0`.
+
+## PDF
+
+Le PDF généré inclut:
+- entête (type/numéro, date, émetteur, client, logo optionnel),
+- tableau des lignes paginé,
+- sous-total HT,
+- notes optionnelles,
+- pied de page avec pagination.
+
+## Développement
+
+Voir `Justfile`, `tox.ini` et `pyproject.toml` pour les recettes (tests, lint/format, types, docs, sécurité). Utilisez `just check` pour lancer la batterie complète via tox.
 ```

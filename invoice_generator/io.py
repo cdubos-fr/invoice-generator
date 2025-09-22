@@ -34,6 +34,14 @@ def parse_quote_json(path: Path) -> tuple[str, list[LineItem]]:
 
     result: list[LineItem] = []
     for obj in data.get('lines', []) or []:
+        # Validate structure first: must be a dict with required keys
+        if not isinstance(obj, dict):
+            logger.info('Ignoring non-dict line: %s', obj)
+            continue
+        required_keys = ('item_key', 'description', 'quantity', 'unit_price')
+        if not all(k in obj for k in required_keys):
+            logger.info('Ignoring malformed line (missing keys): %s', obj)
+            continue
         try:
             key = str(obj.get('item_key') or '')
             desc = str(obj.get('description') or '')

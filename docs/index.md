@@ -1,17 +1,43 @@
-# Welcome to MkDocs
+---
+title: Invoice Generator
+---
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+# Invoice Generator
 
-## Commands
+Application Python pour créer des devis et générer des factures, avec UI PyQt6 et exports PDF/JSON. L’architecture suit MVC et le projet est typé/testé.
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+## Démarrage
 
-## Project layout
+Après installation, lancez:
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+```
+invoice-generator
+```
+
+Trois onglets:
+- Devis: créer des lignes, appliquer des remises
+- Facture: importer un devis JSON et finaliser
+- Configuration: société et catalogue d’items
+
+## Import d’un devis JSON
+
+Dans l’onglet Facture, utilisez « Importer depuis devis JSON ». Le fichier attendu ressemble à:
+
+```json
+{
+    "customer": {"name": "Client SA"},
+    "lines": [
+        {"item_key": "svc", "description": "Service", "quantity": 2, "unit_price": 100.0, "discount_pct": 10.0}
+    ]
+}
+```
+
+Le parseur ignore les lignes mal formées (clés requises manquantes). `discount_pct` manquant = `0.0`.
+
+## PDF
+
+Le PDF inclut entête (logo optionnel), tableau paginé, sous-total HT, notes et pagination.
+
+## Qualité
+
+Tests via pytest, lint/format avec Ruff, typage mypy. Utilisez `just check` pour tout lancer via tox.
