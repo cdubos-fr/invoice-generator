@@ -11,6 +11,7 @@ from dataclasses import field
 from datetime import date
 from enum import StrEnum
 from typing import TYPE_CHECKING
+from typing import Any
 
 
 class DocumentType(StrEnum):
@@ -84,7 +85,7 @@ class Document:
         """Somme HT des lignes du document."""
         return round(sum(li.total_ht() for li in self.lines), 2)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Return a serializable representation of the document."""
         return {
             'type': self.doc_type.value,

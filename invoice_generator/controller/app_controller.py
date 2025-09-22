@@ -38,6 +38,14 @@ class AppController:
         """Mettre à jour le nom de la société dans la configuration."""
         self.config.set_company_name(name)
 
+    def get_company_logo_path(self) -> str | None:
+        """Retourne le chemin du logo de la société (ou None)."""
+        return self.config.get_company().get('logo_path')
+
+    def set_company_logo_path(self, logo_path: str | None) -> None:
+        """Met à jour le chemin du logo de la société."""
+        self.config.set_company_logo_path(logo_path)
+
     def list_config_items(self) -> list[tuple[str, str, float]]:
         """Retourne les items (key, label, unit_price)."""
         items = self.config.list_items()
@@ -58,7 +66,10 @@ class AppController:
     ) -> tuple[Path, Path]:
         """Génère le JSON et le PDF et retourne leurs chemins."""
         cfg_company = self.config.get_company()
-        issuer = Company(name=cfg_company.get('name', 'Ma Société'))
+        issuer = Company(
+            name=cfg_company.get('name', 'Ma Société'),
+            logo_path=cfg_company.get('logo_path'),
+        )
         customer = Party(name=customer_name)
         doc = Document(
             doc_type=doc_type,

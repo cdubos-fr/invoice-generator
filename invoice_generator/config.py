@@ -61,6 +61,12 @@ class ConfigManager:
         data.setdefault('company', {})['name'] = name
         self.save(data)
 
+    def set_company_logo_path(self, logo_path: str | None) -> None:
+        """Update the company logo path and save the configuration."""
+        data = self.load()
+        data.setdefault('company', {})['logo_path'] = logo_path
+        self.save(data)
+
     def list_items(self) -> list[dict[str, Any]]:
         """Return the list of configured items (products/services)."""
         return list(self.load().get('items', []))

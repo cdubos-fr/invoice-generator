@@ -33,11 +33,14 @@ from ..model import LineItem
 class _ControllerProto(Protocol):
     def get_company_name(self) -> str: ...
     def set_company_name(self, name: str) -> None: ...
+    def get_company_logo_path(self) -> str | None: ...
+    def set_company_logo_path(self, logo_path: str | None) -> None: ...
     def list_config_items(self) -> list[tuple[str, str, float]]: ...
     def upsert_item(self, key: str, label: str, unit_price: float) -> None: ...
     def generate_document(
         self, doc_type: DocumentType, customer_name: str, lines: list[LineItem]
     ) -> tuple[object, object]: ...
+    def load_quote_from_json(self, path: Path) -> tuple[str, list[LineItem]]: ...
 
 
 class MainWindow(QMainWindow):
@@ -75,7 +78,9 @@ class MainWindow(QMainWindow):
 
         def update_price() -> None:
             _key, p = combo.currentData()
-            table.item(row, 3).setText(f'{float(p):.2f}')
+            item = table.item(row, 3)
+            if isinstance(item, QTableWidgetItem):
+                item.setText(f'{float(p):.2f}')
 
         combo.currentIndexChanged.connect(update_price)
         update_price()
@@ -87,7 +92,8 @@ class MainWindow(QMainWindow):
             if not isinstance(combo, QComboBox):
                 continue
             key, price = combo.currentData()
-            desc = table.item(row, 1).text() if table.item(row, 1) else ''
+            cell = table.item(row, 1)
+            desc = cell.text() if isinstance(cell, QTableWidgetItem) else ''
             qty = table.cellWidget(row, 2)
             if not isinstance(qty, QSpinBox):
                 continue
@@ -166,7 +172,9 @@ class MainWindow(QMainWindow):
                         combo.setCurrentIndex(i)
                         break
             # Description
-            self.invoice_table.item(row, 1).setText(li.description)
+            desc_item = self.invoice_table.item(row, 1)
+            if isinstance(desc_item, QTableWidgetItem):
+                desc_item.setText(li.description)
             # Quantité
             qty = self.invoice_table.cellWidget(row, 2)
             if isinstance(qty, QSpinBox):
@@ -207,7 +215,7 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(tab, 'Facture')
 
     def _refresh_items_grid(self, grid: QGridLayout) -> None:
-        items = self._controller.list_config_items()
+        items: list[tuple[str, str, float]] = self._controller.list_config_items()
         for row, (key, label, price) in enumerate(items, start=1):
             key_edit = QLineEdit(key)
             label_edit = QLineEdit(label)
@@ -245,6 +253,30 @@ class MainWindow(QMainWindow):
             lambda: self._controller.set_company_name(self.company_name.text())
         )
         g.addWidget(self.company_name, 0, 1)
+
+        # Logo
+        g.addWidget(QLabel('Logo:'), 1, 0)
+        self.company_logo = QLineEdit(self._controller.get_company_logo_path() or '')
+        browse_btn = QPushButton('Parcourir…')
+
+        def on_browse_logo() -> None:
+            path, _ = QFileDialog.getOpenFileName(
+                self,
+                'Choisir un logo',
+                '',
+                'Images (*.png *.jpg *.jpeg)',
+            )
+            if path:
+                self.company_logo.setText(path)
+                self._controller.set_company_logo_path(path)
+
+        def on_logo_edit_finished() -> None:
+            self._controller.set_company_logo_path(self.company_logo.text() or None)
+
+        browse_btn.clicked.connect(on_browse_logo)
+        self.company_logo.editingFinished.connect(on_logo_edit_finished)
+        g.addWidget(self.company_logo, 1, 1)
+        g.addWidget(browse_btn, 1, 2)
         layout.addWidget(company_box)
 
         items_box = QGroupBox('Produits/Services')
